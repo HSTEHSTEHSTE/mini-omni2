@@ -517,6 +517,7 @@ def generate_AT(
     shift: Optional[int] = None,
     include_prompt: bool = True,
     generate_text=False,
+    audio_suffix=None,
 ) -> torch.Tensor:
 
     T = input_ids[0].size(1)
@@ -534,6 +535,20 @@ def generate_AT(
         top_k=top_k,
         top_p=top_p,
     )
+
+    if audio_suffix is not None:
+        token_T = next_token_A1T1(
+            model,
+            None,
+            audio_suffix,
+            None,
+            None,
+            input_pos=torch.arange(T, T + audio_suffix[0].size(1), device=device),
+            temperature=temperature,
+            top_k=top_k,
+            top_p=top_p,
+        )
+        T = T + audio_suffix[0].size(1)
     output.append(token_T.clone().tolist()[0])
     input_pos = torch.tensor([T], device=device)
     text_end = False
